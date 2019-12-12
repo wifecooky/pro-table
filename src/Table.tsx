@@ -5,14 +5,15 @@ import { Table, Card, Typography } from 'antd';
 import classNames from 'classnames';
 import useMergeValue from 'use-merge-value';
 import moment from 'moment';
-import { ColumnProps, PaginationConfig, TableProps, TableRowSelection } from 'antd/es/table';
+import { TableProps, TablePaginationConfig, ColumnsType } from 'antd/es/table/Table';
 import useFetchData, { UseFetchDataAction, RequestData } from './useFetchData';
 import Container, { ColumnsMapItem } from './container';
 import IndexColumn from './component/indexColumn';
 import Toolbar, { OptionsType, ToolBarProps } from './component/toolBar';
 import Alert from './component/alert';
-import FormSearch from './Form';
+import FormSearch from './Form/index';
 
+type TableRowSelection<T, U = {}> = TableProps<T>['rowSelection'];
 /**
  * money 金额
  * option 操作 需要返回一个数组
@@ -30,7 +31,7 @@ export type ProColumnsValueType =
   | 'index'
   | 'indexBorder';
 
-export interface ProColumns<T = unknown> extends Omit<ColumnProps<T>, 'render' | 'children'> {
+export interface ProBaseColumns<T = {}> {
   /**
    * 自定义 render
    */
@@ -95,6 +96,8 @@ export interface ProColumns<T = unknown> extends Omit<ColumnProps<T>, 'render' |
    */
   hideInTable?: boolean;
 }
+
+export type ProColumns<T = {}> = Omit<ColumnsType<T>[number], 'render' | ''> & ProBaseColumns<T>;
 
 export interface ProTableProps<T> extends Omit<TableProps<T>, 'columns' | 'rowSelection'> {
   columns?: ProColumns<T>[];
@@ -196,19 +199,19 @@ export interface ProTableProps<T> extends Omit<TableProps<T>, 'columns' | 'rowSe
 }
 
 const mergePagination = <T extends any[], U>(
-  pagination: PaginationConfig | boolean | undefined,
+  pagination: TablePaginationConfig | boolean | undefined,
   action: UseFetchDataAction<RequestData<T>>,
-): PaginationConfig | false | undefined => {
+): TablePaginationConfig | false | undefined => {
   if (!pagination) {
     return pagination;
   }
-  let defaultPagination: PaginationConfig | {} = pagination;
+  let defaultPagination: TablePaginationConfig | {} = pagination;
   const { current, pageSize } = action;
   if (pagination === true) {
     defaultPagination = {};
   }
   return {
-    ...(defaultPagination as PaginationConfig),
+    ...(defaultPagination as TablePaginationConfig),
     current,
     pageSize,
     onChange: (page: number, newPageSize?: number) => {
@@ -218,7 +221,7 @@ const mergePagination = <T extends any[], U>(
       } else if (current !== page) {
         action.setCurrent(page);
       }
-      const { onChange } = pagination as PaginationConfig;
+      const { onChange } = pagination as TablePaginationConfig;
       if (onChange) {
         onChange(page, newPageSize || 10);
       }
@@ -337,15 +340,15 @@ const ColumRender = <T, U = any>({ item, text, row, index }: ColumRenderInterfac
   }
   return dom as React.ReactNode;
 };
-
 const genColumnList = <T, U = {}>(
   columns: ProColumns<T>[],
   action: UseFetchDataAction<RequestData<T>>,
   map: {
     [key: string]: ColumnsMapItem;
   },
-): ColumnProps<T>[] =>
+): ColumnsType<T> =>
   columns
+    .filter(item => item && !item.hideInTable)
     .map(item => {
       const { key, dataIndex } = item;
       const columnKey = `${key || ''}-${dataIndex || ''}`;
@@ -354,14 +357,13 @@ const genColumnList = <T, U = {}>(
         ...item,
         fixed: config.fixed,
         width: item.width || (item.fixed ? 200 : undefined),
-        children: item.children ? genColumnList(item.children, action, map) : undefined,
         ellipsis: false,
         render: (text: any, row: T, index: number) => (
           <ColumRender<T> item={item} text={text} row={row} index={index} />
         ),
-      };
-    })
-    .filter(item => !item.hideInTable);
+        ...(item.children ? { children: genColumnList(item.children, action, map) } : {}),
+      } as ColumnsType<T>[number];
+    });
 
 /**
  * 🏆 Use Ant Design Table like a Pro!
@@ -394,13 +396,12 @@ const ProTable = <T, U = {}>(props: ProTableProps<T>) => {
     ...reset
   } = props;
   const [formSearch, setFormSearch] = useState<{}>({});
-
   /**
    * 需要初始化 不然默认可能报错
    */
   const { defaultCurrent, defaultPageSize } =
     typeof propsPagination === 'object'
-      ? (propsPagination as PaginationConfig)
+      ? (propsPagination as TablePaginationConfig)
       : { defaultCurrent: 1, defaultPageSize: 10 };
 
   const action = useFetchData(
@@ -477,7 +478,7 @@ const ProTable = <T, U = {}>(props: ProTableProps<T>) => {
     }
   }, [JSON.stringify(tableColumn)]);
 
-  const [selectedRowKeys, setSelectedRowKeys] = useMergeValue<string[] | number[]>([], {
+  const [selectedRowKeys, setSelectedRowKeys] = useMergeValue<(string | number)[]>([], {
     value: propsRowSelection ? propsRowSelection.selectedRowKeys : undefined,
   });
   const [selectedRows, setSelectedRows] = useState<T[]>([]);

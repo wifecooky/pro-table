@@ -1,25 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Form,
-  Input,
-  Row,
-  Col,
-  TimePicker,
-  InputNumber,
-  DatePicker,
-  Select,
-  Button,
-  Icon,
-} from 'antd';
+import { Form, Input, Row, Col, TimePicker, InputNumber, DatePicker, Select, Button } from 'antd';
+import { DownOutlined } from '@ant-design/icons';
 import moment, { Moment } from 'moment';
 import RcResizeObserver from 'rc-resize-observer';
-import { FormComponentProps } from 'antd/lib/form';
 import { ConfigConsumer, ConfigConsumerProps } from 'antd/lib/config-provider';
 import Container from '../container';
 import { ProColumns } from '../index';
 import './index.less';
 
-interface FormItem<T> extends FormComponentProps {
+interface FormItem<T> {
   onSubmit?: (value: T) => void;
   onReset?: () => void;
   momentFormat?: 'string' | 'number' | false;
@@ -142,7 +131,8 @@ const genValue = (value: any, momentFormat?: string | boolean, proColumnsMap?: a
   return tmpValue;
 };
 
-const FormSearch = <T, U = {}>({ form, onSubmit, momentFormat = 'string' }: FormItem<T>) => {
+const FormSearch = <T, U = {}>({ onSubmit, momentFormat = 'string' }: FormItem<T>) => {
+  const [form] = Form.useForm();
   const counter = Container.useContainer();
   const [collapse, setCollapse] = useState<boolean>(true);
   const [proColumnsMap, setProColumnsMap] = useState<{
@@ -178,10 +168,8 @@ const FormSearch = <T, U = {}>({ form, onSubmit, momentFormat = 'string' }: Form
     .filter((_, index) => (collapse ? index < 2 : true))
     .map(item => (
       <Col span={8} key={item.key || item.dataIndex}>
-        <Form.Item label={item.title}>
-          {form.getFieldDecorator((item.key || item.dataIndex) as string, {
-            initialValue: item.initialValue,
-          })(<FromInputRender item={item} />)}
+        <Form.Item label={item.title} name={item.key || item.dataIndex}>
+          <FromInputRender item={item} />
         </Form.Item>
       </Col>
     ));
@@ -197,45 +185,46 @@ const FormSearch = <T, U = {}>({ form, onSubmit, momentFormat = 'string' }: Form
             }}
           >
             <RcResizeObserver onResize={({ height }) => setFormHeight(height + 24)}>
-              <Form>
-                <Row gutter={16} justify="end">
-                  {domList}
-                  <Col
-                    span={8}
-                    offset={(2 - (domList.length % 3)) * 8}
-                    key="option"
-                    className={`${className}-option`}
-                  >
-                    <Button type="primary" htmlType="submit" onClick={() => submit()}>
-                      搜索
-                    </Button>
-                    <Button
-                      style={{ marginLeft: 8 }}
-                      onClick={() => {
-                        form.resetFields();
-                        submit();
-                      }}
+              <div>
+                <Form form={form}>
+                  <Row gutter={16} justify="end">
+                    {domList}
+                    <Col
+                      span={8}
+                      offset={(2 - (domList.length % 3)) * 8}
+                      key="option"
+                      className={`${className}-option`}
                     >
-                      重置
-                    </Button>
-                    <a
-                      style={{ marginLeft: 8 }}
-                      onClick={() => {
-                        setCollapse(!collapse);
-                      }}
-                    >
-                      {collapse ? '展开' : '收起'}{' '}
-                      <Icon
-                        style={{
-                          transition: '0.3s all',
-                          transform: `rotate(${collapse ? 0 : 0.5}turn)`,
+                      <Button type="primary" htmlType="submit" onClick={() => submit()}>
+                        搜索
+                      </Button>
+                      <Button
+                        style={{ marginLeft: 8 }}
+                        onClick={() => {
+                          form.resetFields();
+                          submit();
                         }}
-                        type="down"
-                      />
-                    </a>
-                  </Col>
-                </Row>
-              </Form>
+                      >
+                        重置
+                      </Button>
+                      <a
+                        style={{ marginLeft: 8 }}
+                        onClick={() => {
+                          setCollapse(!collapse);
+                        }}
+                      >
+                        {collapse ? '展开' : '收起'}{' '}
+                        <DownOutlined
+                          style={{
+                            transition: '0.3s all',
+                            transform: `rotate(${collapse ? 0 : 0.5}turn)`,
+                          }}
+                        />
+                      </a>
+                    </Col>
+                  </Row>
+                </Form>
+              </div>
             </RcResizeObserver>
           </div>
         );
@@ -244,4 +233,4 @@ const FormSearch = <T, U = {}>({ form, onSubmit, momentFormat = 'string' }: Form
   );
 };
 
-export default Form.create<FormItem<any>>()(FormSearch);
+export default FormSearch;

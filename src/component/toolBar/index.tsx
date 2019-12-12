@@ -1,6 +1,7 @@
 import React from 'react';
-import { Icon, Divider, Tooltip } from 'antd';
+import { Divider, Tooltip } from 'antd';
 import { ConfigConsumer, ConfigConsumerProps } from 'antd/lib/config-provider/context';
+import { FullscreenOutlined, ReloadOutlined, SettingTwoTone } from '@ant-design/icons';
 import ColumnSetting from '../columnSetting';
 
 import { UseFetchDataAction, RequestData } from '../../useFetchData';
@@ -33,15 +34,15 @@ export interface ToolBarProps<T = unknown> {
 const buttonText = {
   fullScreen: {
     text: '全屏',
-    icon: <Icon type="fullscreen" />,
+    icon: <FullscreenOutlined />,
   },
   reload: {
     text: '刷新',
-    icon: <Icon type="reload" />,
+    icon: <ReloadOutlined />,
   },
   setting: {
     text: '列设置',
-    icon: <Icon type="setting" />,
+    icon: <SettingTwoTone />,
   },
 };
 

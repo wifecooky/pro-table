@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { ConfigConsumer, ConfigConsumerProps } from 'antd/lib/config-provider/context';
-import { Checkbox, Popover, Icon, Tooltip } from 'antd';
+import { Checkbox, Popover, Tooltip } from 'antd';
+import { SettingTwoTone, VerticalAlignMiddleOutlined, PushpinTwoTone } from '@ant-design/icons';
 import Container, { ColumnsMapItem } from '../../container';
 import { ProColumns } from '../../Table';
 import './index.less';
@@ -74,15 +75,14 @@ const CheckboxList: React.FC<{
             title="固定到左边"
             show={fixed !== 'left'}
           >
-            <Icon
-              type="pushpin"
+            <PushpinTwoTone
               style={{
                 transform: 'rotate(-90deg)',
               }}
             />
           </ToolTipIcon>
           <ToolTipIcon columnKey={columnKey} fixed={undefined} title="取消固定" show={!!fixed}>
-            <Icon type="vertical-align-middle" />
+            <VerticalAlignMiddleOutlined />
           </ToolTipIcon>
           <ToolTipIcon
             columnKey={columnKey}
@@ -90,7 +90,7 @@ const CheckboxList: React.FC<{
             title="固定到右边"
             show={fixed !== 'right'}
           >
-            <Icon type="pushpin" />
+            <PushpinTwoTone />
           </ToolTipIcon>
         </span>
       </span>
@@ -203,8 +203,7 @@ const ColumnSetting = <T, U = {}>(props: ColumnSettingProps<T>) => {
             content={<CheckboxList className={className} localColumns={localColumns} />}
           >
             <Tooltip title="列设置">
-              <Icon
-                type="setting"
+              <SettingTwoTone
                 className={`${toolBarClassName}-item-icon`}
                 style={{
                   fontSize: 16,

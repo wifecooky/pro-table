@@ -31,7 +31,6 @@ const columns: ProColumns<DataItem>[] = [
     title: '序号',
     dataIndex: 'index',
     valueType: 'indexBorder',
-    fixed: 'left',
     width: 80,
   },
   {
@@ -93,7 +92,6 @@ const columns: ProColumns<DataItem>[] = [
     title: 'option',
     valueType: 'option',
     dataIndex: 'id',
-    fixed: 'right',
     render: (text, row, index, action) => [
       <a
         onClick={() => {
@@ -132,7 +130,7 @@ const request = (): Promise<{
         data,
         success: true,
       });
-    }, 2000);
+    }, 1000000);
   });
 
 export default () => (
